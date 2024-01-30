@@ -9,34 +9,54 @@
 #include "grid_map_filters/MathExpressionFilter.hpp"
 
 #include <grid_map_core/grid_map_core.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-using namespace filters;
+#include <string>
 
-namespace grid_map {
+#include "grid_map_cv/utilities.hpp"
 
-MathExpressionFilter::MathExpressionFilter() = default;
+namespace grid_map
+{
 
-MathExpressionFilter::~MathExpressionFilter() = default;
+template<typename T>
+MathExpressionFilter<T>::MathExpressionFilter()
+{
+}
 
-bool MathExpressionFilter::configure() {
-  if (!FilterBase::getParam(std::string("expression"), expression_)) {
-    ROS_ERROR("MathExpressionFilter did not find parameter 'expression'.");
+template<typename T>
+MathExpressionFilter<T>::~MathExpressionFilter()
+{
+}
+
+template<typename T>
+bool MathExpressionFilter<T>::configure()
+{
+  ParameterReader param_reader(this->param_prefix_, this->params_interface_);
+
+  if (!param_reader.get(std::string("expression"), expression_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "MathExpressionFilter did not find parameter 'expression'.");
     return false;
   }
 
-  if (!FilterBase::getParam(std::string("output_layer"), outputLayer_)) {
-    ROS_ERROR("MathExpressionFilter did not find parameter 'output_layer'.");
+  if (!param_reader.get(std::string("output_layer"), outputLayer_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "MathExpressionFilter did not find parameter 'output_layer'.");
     return false;
   }
 
-  // TODO Can we make caching work with changing shared variable?
-  //  parser_.setCacheExpressions(true);
+  // TODO(needs_assignment): Can we make caching work with changing shared variable?
+//  parser_.setCacheExpressions(true);
   return true;
 }
 
-bool MathExpressionFilter::update(const GridMap& mapIn, GridMap& mapOut) {
+template<typename T>
+bool MathExpressionFilter<T>::update(const T & mapIn, T & mapOut)
+{
   mapOut = mapIn;
-  for (const auto& layer : mapOut.getLayers()) {
+  for (const auto & layer : mapOut.getLayers()) {
     parser_.var(layer).setShared(mapOut[layer]);
   }
   EigenLab::Value<Eigen::MatrixXf> result(parser_.eval(expression_));
@@ -45,3 +65,7 @@ bool MathExpressionFilter::update(const GridMap& mapIn, GridMap& mapOut) {
 }
 
 }  // namespace grid_map
+
+PLUGINLIB_EXPORT_CLASS(
+  grid_map::MathExpressionFilter<grid_map::GridMap>,
+  filters::FilterBase<grid_map::GridMap>)

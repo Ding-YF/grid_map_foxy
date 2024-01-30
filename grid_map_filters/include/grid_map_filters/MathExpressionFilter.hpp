@@ -6,21 +6,25 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
-
-#include <string>
-#include "EigenLab/EigenLab.h"
+#ifndef GRID_MAP_FILTERS__MATHEXPRESSIONFILTER_HPP_
+#define GRID_MAP_FILTERS__MATHEXPRESSIONFILTER_HPP_
 
 #include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
 
-namespace grid_map {
+#include <string>
+
+#include "EigenLab/EigenLab.hpp"
+
+namespace grid_map
+{
 
 /*!
  * Parses and evaluates a mathematical matrix expression with layers of a grid map.
  */
-class MathExpressionFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class MathExpressionFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -29,7 +33,7 @@ class MathExpressionFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~MathExpressionFilter() override;
+  virtual ~MathExpressionFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
@@ -41,9 +45,9 @@ class MathExpressionFilter : public filters::FilterBase<GridMap> {
    * @param mapIn gridMap with the different layers to take the min.
    * @param mapOut gridMap with an additional layer containing the sum.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! EigenLab parser.
   EigenLab::Parser<Eigen::MatrixXf> parser_;
 
@@ -55,3 +59,4 @@ class MathExpressionFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__MATHEXPRESSIONFILTER_HPP_

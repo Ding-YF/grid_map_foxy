@@ -6,20 +6,24 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
-
-#include <Eigen/Core>
+#ifndef GRID_MAP_FILTERS__COLORFILLFILTER_HPP_
+#define GRID_MAP_FILTERS__COLORFILLFILTER_HPP_
 
 #include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
 
-namespace grid_map {
+#include <Eigen/Core>
+#include <string>
+
+namespace grid_map
+{
 
 /*!
  * Creates a new color layer.
  */
-class ColorFillFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class ColorFillFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -28,7 +32,7 @@ class ColorFillFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~ColorFillFilter() override;
+  virtual ~ColorFillFilter();
 
   /*!
    * Configures the filter.
@@ -40,9 +44,9 @@ class ColorFillFilter : public filters::FilterBase<GridMap> {
    * @param mapIn grid map to add the new layer.
    * @param mapOut grid map the grid map with the new color layer.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! Color.
   double r_, g_, b_;
 
@@ -54,3 +58,4 @@ class ColorFillFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__COLORFILLFILTER_HPP_

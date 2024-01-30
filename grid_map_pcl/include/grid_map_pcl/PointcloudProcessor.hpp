@@ -6,26 +6,32 @@
  *      Institute: ETH Zurich, Robotic Systems Lab
  */
 
-#pragma once
+#ifndef GRID_MAP_PCL__POINTCLOUDPROCESSOR_HPP_
+#define GRID_MAP_PCL__POINTCLOUDPROCESSOR_HPP_
 
 #include <string>
+#include <vector>
+#include <memory>
 
-#include "grid_map_pcl/PclLoaderParameters.hpp"
 #include "grid_map_pcl/helpers.hpp"
+#include "grid_map_pcl/PclLoaderParameters.hpp"
 
-namespace grid_map {
-namespace grid_map_pcl {
+namespace grid_map
+{
+namespace grid_map_pcl
+{
 
-class PointcloudProcessor {
- public:
-  PointcloudProcessor();
+class PointcloudProcessor
+{
+public:
+  explicit PointcloudProcessor(const rclcpp::Logger & node_logger);
   virtual ~PointcloudProcessor() = default;
 
   /*!
    * Load parameters for the point cloud processing.
    * @param[in] full path to the config file with parameters
    */
-  void loadParameters(const std::string& filename);
+  void loadParameters(const std::string & filename);
 
   /*!
    * Remove outliers from the point cloud. Function is based on
@@ -54,7 +60,8 @@ class PointcloudProcessor {
    * @param[in] pointer to the pcl point cloud
    * @return vector of sets of indices. Vector will be empty if no clusters are found.
    */
-  std::vector<pcl::PointIndices> extractClusterIndicesFromPointcloud(Pointcloud::ConstPtr inputCloud) const;
+  std::vector<pcl::PointIndices> extractClusterIndicesFromPointcloud(
+    Pointcloud::ConstPtr inputCloud) const;
 
   /*!
    * Finds clusters in the input cloud and returns vector point clouds.
@@ -63,7 +70,8 @@ class PointcloudProcessor {
    * @param[in] pointer to the pcl point cloud
    * @return vector of point clouds. Vector will be empty if no clusters are found.
    */
-  std::vector<Pointcloud::Ptr> extractClusterCloudsFromPointcloud(Pointcloud::ConstPtr inputCloud) const;
+  std::vector<Pointcloud::Ptr> extractClusterCloudsFromPointcloud(
+    Pointcloud::ConstPtr inputCloud) const;
 
   /*!
    * Given a vector of indices and an input point cloud, the function
@@ -73,13 +81,16 @@ class PointcloudProcessor {
    * @param[in] pointer to the pcl point cloud
    * @return Pointer to the point cloud with points indexed by indices.
    */
-  static Pointcloud::Ptr makeCloudFromIndices(const std::vector<int>& indices, Pointcloud::ConstPtr inputCloud);
+  Pointcloud::Ptr makeCloudFromIndices(
+    const std::vector<int> & indices,
+    Pointcloud::ConstPtr inputCloud) const;
 
   /*!
    * Saves a point cloud to a pcd file.
    * @param[in] full path to the output cloud
    */
-  static void savePointCloudAsPcdFile(const std::string& filename, const Pointcloud& cloud);
+  void savePointCloudAsPcdFile(const std::string & filename, const Pointcloud & cloud) const;
+
 
   /*!
    * Applies a rigid body transformation to the input cloud. The
@@ -89,11 +100,16 @@ class PointcloudProcessor {
    */
   Pointcloud::Ptr applyRigidBodyTransformation(Pointcloud::ConstPtr inputCloud) const;
 
- protected:
+protected:
   // Parameters for the pcl filters.
   std::unique_ptr<grid_map_pcl::PclLoaderParameters> params_;
+
+private:
+  // Logging interface
+  rclcpp::Logger node_logger_;
 };
 
-} /* namespace grid_map_pcl */
+}  // namespace grid_map_pcl
 
-} /* namespace grid_map*/
+}  // namespace grid_map
+#endif  // GRID_MAP_PCL__POINTCLOUDPROCESSOR_HPP_

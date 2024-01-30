@@ -6,21 +6,25 @@
  *      Institute: ETH Zurich, Robotic Systems Lab
  */
 
-#include <cstdlib>
-
 #include <gtest/gtest.h>
+#include <rcutils/logging.h>
+
+#include <cstdlib>
 
 #include "grid_map_pcl/helpers.hpp"
 
 #include "PointcloudCreator.hpp"
 #include "test_helpers.hpp"
 
-namespace grid_map {
-namespace grid_map_pcl_test {
 
-TEST(HelpersTest, MeanPositionTest) {
-  grid_map_pcl_test::setVerbosityLevel(ros::console::levels::Warn);
-  const auto seed = rand();
+namespace grid_map
+{
+namespace grid_map_pcl_test
+{
+
+TEST(HelpersTest, MeanPositionTest)
+{
+  const auto seed = std::rand();
   grid_map_pcl_test::rndGenerator.seed(seed);
 
   const unsigned int numTests = 10;
@@ -39,5 +43,5 @@ TEST(HelpersTest, MeanPositionTest) {
   }
 }
 
-} /*namespace grid_map_pcl_test */
+}  // namespace grid_map_pcl_test
 }  // namespace grid_map

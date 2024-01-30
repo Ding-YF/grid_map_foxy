@@ -7,36 +7,38 @@
  *
  */
 
-#pragma once
+#ifndef GRID_MAP_VISUALIZATION__GRIDMAPVISUALIZATION_HPP_
+#define GRID_MAP_VISUALIZATION__GRIDMAPVISUALIZATION_HPP_
 
-#include <grid_map_msgs/GridMap.h>
-#include <grid_map_visualization/visualizations/VisualizationFactory.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 #include <grid_map_visualization/visualizations/MapRegionVisualization.hpp>
+#include <grid_map_visualization/visualizations/OccupancyGridVisualization.hpp>
 #include <grid_map_visualization/visualizations/PointCloudVisualization.hpp>
 #include <grid_map_visualization/visualizations/VectorVisualization.hpp>
-#include <grid_map_visualization/visualizations/OccupancyGridVisualization.hpp>
+#include <grid_map_visualization/visualizations/VisualizationFactory.hpp>
 
 // ROS
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // STD
-#include <vector>
 #include <memory>
+#include <string>
+#include <vector>
 
-namespace grid_map_visualization {
+namespace grid_map_visualization
+{
 
 /*!
  * Visualizes a grid map by publishing different topics that can be viewed in Rviz.
  */
 class GridMapVisualization
 {
- public:
-
+public:
   /*!
    * Constructor.
-   * @param nodeHandle the ROS node handle.
+   * @param parameterName The config parameter name.
    */
-  GridMapVisualization(ros::NodeHandle& nodeHandle, const std::string& parameterName);
+  explicit GridMapVisualization(const std::string & parameterName);
 
   /*!
    * Destructor.
@@ -47,10 +49,12 @@ class GridMapVisualization
    * Callback function for the grid map.
    * @param message the grid map message to be visualized.
    */
-  void callback(const grid_map_msgs::GridMap& message);
+  void callback(const grid_map_msgs::msg::GridMap::SharedPtr message);
 
- private:
+  //! ROS node shared pointer
+  rclcpp::Node::SharedPtr nodePtr;
 
+private:
   /*!
    * Read parameters from ROS.
    * @return true if successful.
@@ -66,19 +70,16 @@ class GridMapVisualization
   /*!
    * Check if visualizations are active (subscribed to),
    * and accordingly cancels/activates the subscription to the
-   * grid map to safe bandwidth.
+   * grid map to save bandwidth.
    * @param timerEvent the timer event.
    */
-  void updateSubscriptionCallback(const ros::TimerEvent& timerEvent);
-
-  //! ROS nodehandle.
-  ros::NodeHandle& nodeHandle_;
+  void updateSubscriptionCallback();
 
   //! Parameter name of the visualizer configuration list.
   std::string visualizationsParameter_;
 
   //! ROS subscriber to the grid map.
-  ros::Subscriber mapSubscriber_;
+  rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr mapSubscriber_;
 
   //! Topic name of the grid map to be visualized.
   std::string mapTopic_;
@@ -87,16 +88,20 @@ class GridMapVisualization
   std::vector<std::shared_ptr<VisualizationBase>> visualizations_;
 
   //! Visualization factory.
-  VisualizationFactory factory_;
+  std::shared_ptr<VisualizationFactory> factory_;
 
   //! Timer to check the activity of the visualizations.
-  ros::Timer activityCheckTimer_;
+  rclcpp::TimerBase::SharedPtr activityCheckTimer_;
 
-  //! Duration of checking the activity of the visualizations.
-  ros::Duration activityCheckDuration_;
+  //! Rate of checking the activity of the visualizations.
+  double activityCheckRate_;
 
   //! If the grid map visualization is subscribed to the grid map.
   bool isSubscribed_;
+
+  //! If the grid map subscriber is Transient local.
+  bool isGridMapSubLatched_;
 };
 
-} /* namespace */
+}  // namespace grid_map_visualization
+#endif  // GRID_MAP_VISUALIZATION__GRIDMAPVISUALIZATION_HPP_

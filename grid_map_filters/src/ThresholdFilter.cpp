@@ -9,87 +9,102 @@
 #include "grid_map_filters/ThresholdFilter.hpp"
 
 #include <grid_map_core/grid_map_core.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-using namespace filters;
+#include <string>
 
-namespace grid_map {
+#include "grid_map_cv/utilities.hpp"
 
-ThresholdFilter::ThresholdFilter()
-    : lowerThreshold_(0.0), upperThreshold_(1.0), useLowerThreshold_(false), useUpperThreshold_(false), setTo_(0.5) {}
+namespace grid_map
+{
 
-ThresholdFilter::~ThresholdFilter() = default;
+template<typename T>
+ThresholdFilter<T>::ThresholdFilter()
+: lowerThreshold_(0.0),
+  upperThreshold_(1.0),
+  setTo_(0.5),
+  useLowerThreshold_(false),
+  useUpperThreshold_(false)
+{
+}
 
-bool ThresholdFilter::configure() {
-  // Load Parameters
-  if (FilterBase::getParam(std::string("lower_threshold"), lowerThreshold_)) {
+template<typename T>
+ThresholdFilter<T>::~ThresholdFilter()
+{
+}
+
+template<typename T>
+bool ThresholdFilter<T>::configure()
+{
+  ParameterReader param_reader(this->param_prefix_, this->params_interface_);
+
+  if (param_reader.get(std::string("lower_threshold"), lowerThreshold_)) {
     useLowerThreshold_ = true;
-    ROS_DEBUG("lower threshold = %f", lowerThreshold_);
+    RCLCPP_DEBUG(this->logging_interface_->get_logger(), "lower threshold = %f", lowerThreshold_);
   }
 
-  if (FilterBase::getParam(std::string("upper_threshold"), upperThreshold_)) {
+  if (param_reader.get(std::string("upper_threshold"), upperThreshold_)) {
     useUpperThreshold_ = true;
-    ROS_DEBUG("upper threshold = %f", upperThreshold_);
+    RCLCPP_DEBUG(this->logging_interface_->get_logger(), "upper threshold = %f", upperThreshold_);
   }
 
   if (!useLowerThreshold_ && !useUpperThreshold_) {
-    ROS_ERROR("ThresholdFilter did not find parameter 'lower_threshold' or 'upper_threshold',");
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "ThresholdFilter did not find parameter 'lower_threshold' or 'upper_threshold',");
     return false;
   }
 
   if (useLowerThreshold_ && useUpperThreshold_) {
-    ROS_ERROR("Set either 'lower_threshold' or 'upper_threshold'! Only one threshold can be used!");
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "Set either 'lower_threshold' or 'upper_threshold'! Only one threshold can be used!");
     return false;
   }
 
-  if (!FilterBase::getParam(std::string("set_to"), setTo_)) {
-    ROS_ERROR("ThresholdFilter did not find parameter 'set_to'.");
+  if (!param_reader.get(std::string("set_to"), setTo_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(), "ThresholdFilter did not find parameter 'set_to'.");
     return false;
   }
 
-  if (!FilterBase::getParam(std::string("condition_layer"), conditionLayer_)) {
-    ROS_ERROR("ThresholdFilter did not find parameter 'condition_layer'.");
-    return false;
-  }
-
-  if (!FilterBase::getParam(std::string("output_layer"), outputLayer_)) {
-    ROS_ERROR("ThresholdFilter did not find parameter 'ouput_layer'.");
+  if (!param_reader.get(std::string("layer"), layer_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(), "ThresholdFilter did not find parameter 'layer'.");
     return false;
   }
 
   return true;
 }
 
-bool ThresholdFilter::update(const GridMap& mapIn, GridMap& mapOut) {
+template<typename T>
+bool ThresholdFilter<T>::update(const T & mapIn, T & mapOut)
+{
   mapOut = mapIn;
 
   // Check if layer exists.
-  if (!mapOut.exists(conditionLayer_)) {
-    ROS_ERROR("Check your condition_layer! Layer %s does not exist", conditionLayer_.c_str());
-    return false;
-  }
-
-  if (!mapOut.exists(outputLayer_)) {
-    ROS_ERROR("Check your output_layer! Layer %s does not exist", outputLayer_.c_str());
+  if (!mapOut.exists(layer_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(), "Check your threshold types! Type %s does not exist",
+      layer_.c_str());
     return false;
   }
 
   // For each cell in map.
-  const auto& condition = mapOut[conditionLayer_];
-  auto& data = mapOut[outputLayer_];
+  auto & data = mapOut[layer_];
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
+    if (!mapOut.isValid(*iterator, layer_)) {continue;}
     const size_t i = iterator.getLinearIndex();
-    const float& conditionValue = condition(i);
-    float& outputValue = data(i);
-    // If the condition_value is nan, the output will also be set to the setTo value (NaN comparisons evaluate to false).
-    if (useLowerThreshold_ && !(conditionValue >= lowerThreshold_)) {
-      outputValue = setTo_;
-    }
-    if (useUpperThreshold_ && !(conditionValue <= upperThreshold_)) {
-      outputValue = setTo_;
-    }
+    float & value = data(i);
+    if (useLowerThreshold_) {if (value < lowerThreshold_) {value = setTo_;}}
+    if (useUpperThreshold_) {if (value > upperThreshold_) {value = setTo_;}}
   }
 
   return true;
 }
 
 }  // namespace grid_map
+
+PLUGINLIB_EXPORT_CLASS(
+  grid_map::ThresholdFilter<grid_map::GridMap>,
+  filters::FilterBase<grid_map::GridMap>)

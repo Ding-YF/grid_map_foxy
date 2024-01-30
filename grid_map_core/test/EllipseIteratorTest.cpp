@@ -6,26 +6,28 @@
  *	 Institute: ETH Zurich, ANYbotics
  */
 
-#include "grid_map_core/iterators/EllipseIterator.hpp"
-#include "grid_map_core/GridMap.hpp"
+// Eigen
+#include <Eigen/Core>
 
 // gtest
 #include <gtest/gtest.h>
 
+// Limits
+#include <cfloat>
+
 // Vector
 #include <vector>
 
-using grid_map::GridMap;
-using grid_map::Length;
-using grid_map::Position;
-using grid_map::EllipseIterator;
+#include "grid_map_core/iterators/EllipseIterator.hpp"
+#include "grid_map_core/GridMap.hpp"
+
 
 TEST(EllipseIterator, OneCellWideEllipse)
 {
-  GridMap map( { "types" });
-  map.setGeometry(Length(8.0, 5.0), 1.0, Position(0.0, 0.0));
+  grid_map::GridMap map({"types"});
+  map.setGeometry(grid_map::Length(8.0, 5.0), 1.0, grid_map::Position(0.0, 0.0));
 
-  EllipseIterator iterator(map, Position(0.0, 0.0), Length(8.0, 1.0));
+  grid_map::EllipseIterator iterator(map, grid_map::Position(0.0, 0.0), grid_map::Length(8.0, 1.0));
 
   EXPECT_FALSE(iterator.isPastEnd());
   EXPECT_EQ(0, (*iterator)(0));

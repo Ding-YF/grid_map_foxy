@@ -6,21 +6,24 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
+#ifndef GRID_MAP_FILTERS__COLORBLENDINGFILTER_HPP_
+#define GRID_MAP_FILTERS__COLORBLENDINGFILTER_HPP_
+
+#include <filters/filter_base.hpp>
 
 #include <Eigen/Core>
 #include <string>
 
-#include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
-
-namespace grid_map {
+namespace grid_map
+{
 
 /*!
  * Blend two color layers.
  */
-class ColorBlendingFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class ColorBlendingFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -29,7 +32,7 @@ class ColorBlendingFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~ColorBlendingFilter() override;
+  virtual ~ColorBlendingFilter();
 
   /*!
    * Configures the filter.
@@ -41,10 +44,15 @@ class ColorBlendingFilter : public filters::FilterBase<GridMap> {
    * @param mapIn grid map containing the two color layers.
    * @param mapOut grid map containing mapIn and the blended color layer.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
-  enum class BlendModes { Normal, HardLight, SoftLight };
+private:
+  enum class BlendModes
+  {
+    Normal,
+    HardLight,
+    SoftLight
+  };
 
   //! Input layers.
   std::string backgroundLayer_, foregroundLayer_;
@@ -60,3 +68,4 @@ class ColorBlendingFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__COLORBLENDINGFILTER_HPP_

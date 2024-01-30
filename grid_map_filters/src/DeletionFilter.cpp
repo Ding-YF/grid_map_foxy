@@ -9,37 +9,59 @@
 #include "grid_map_filters/DeletionFilter.hpp"
 
 #include <grid_map_core/GridMap.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-using namespace filters;
+#include <string>
 
-namespace grid_map {
+#include "grid_map_cv/utilities.hpp"
 
-DeletionFilter::DeletionFilter() = default;
+namespace grid_map
+{
 
-DeletionFilter::~DeletionFilter() = default;
+template<typename T>
+DeletionFilter<T>::DeletionFilter()
+{
+}
 
-bool DeletionFilter::configure() {
+template<typename T>
+DeletionFilter<T>::~DeletionFilter()
+{
+}
+
+template<typename T>
+bool DeletionFilter<T>::configure()
+{
+  ParameterReader param_reader(this->param_prefix_, this->params_interface_);
+
   // Load Parameters
-  if (!FilterBase::getParam(std::string("layers"), layers_)) {
-    ROS_ERROR("DeletionFilter did not find parameter 'layers'.");
+  if (!param_reader.get(std::string("layers"), layers_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(), "DeletionFilter did not find parameter 'layers'.");
     return false;
   }
 
   return true;
 }
 
-bool DeletionFilter::update(const GridMap& mapIn, GridMap& mapOut) {
+template<typename T>
+bool DeletionFilter<T>::update(const T & mapIn, T & mapOut)
+{
   mapOut = mapIn;
 
-  for (const auto& layer : layers_) {
+  for (const auto & layer : layers_) {
     // Check if layer exists.
     if (!mapOut.exists(layer)) {
-      ROS_ERROR("Check your deletion layers! Type %s does not exist.", layer.c_str());
+      RCLCPP_ERROR(
+        this->logging_interface_->get_logger(),
+        "Check your deletion layers! Type %s does not exist.",
+        layer.c_str());
       continue;
     }
 
     if (!mapOut.erase(layer)) {
-      ROS_ERROR("Could not remove type %s.", layer.c_str());
+      RCLCPP_ERROR(
+        this->logging_interface_->get_logger(), "Could not remove type %s.",
+        layer.c_str());
     }
   }
 
@@ -47,3 +69,7 @@ bool DeletionFilter::update(const GridMap& mapIn, GridMap& mapOut) {
 }
 
 }  // namespace grid_map
+
+PLUGINLIB_EXPORT_CLASS(
+  grid_map::DeletionFilter<grid_map::GridMap>,
+  filters::FilterBase<grid_map::GridMap>)

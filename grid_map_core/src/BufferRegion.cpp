@@ -7,36 +7,45 @@
  */
 #include <grid_map_core/BufferRegion.hpp>
 
-namespace grid_map {
+namespace grid_map
+{
 
-BufferRegion::BufferRegion() : startIndex_(Index::Zero()),
-    size_(Size::Zero()),
-    quadrant_(BufferRegion::Quadrant::Undefined)
+BufferRegion::BufferRegion()
+: staretIndex_(Index::Zero()),
+  size_(Size::Zero()),
+  quadrant_(BufferRegion::Quadrant::Undefined)
 {
 }
 
-BufferRegion::BufferRegion(Index index, Size size, BufferRegion::Quadrant quadrant) : startIndex_(std::move(index)),
-    size_(std::move(size)),
-    quadrant_(std::move(quadrant))
+BufferRegion::BufferRegion(
+  const Index & index, const Size & size,
+  const BufferRegion::Quadrant & quadrant)
+: staretIndex_(index),
+  size_(size),
+  quadrant_(quadrant)
 {
 }
 
-const Index& BufferRegion::getStartIndex() const
+BufferRegion::~BufferRegion()
 {
-  return startIndex_;
 }
 
-void BufferRegion::setStartIndex(const Index& startIndex)
+const Index & BufferRegion::getStartIndex() const
 {
-  startIndex_ = startIndex;
+  return staretIndex_;
 }
 
-const Size& BufferRegion::getSize() const
+void BufferRegion::setStartIndex(const Index & staretIndex)
+{
+  staretIndex_ = staretIndex;
+}
+
+const Size & BufferRegion::getSize() const
 {
   return size_;
 }
 
-void BufferRegion::setSize(const Size& size)
+void BufferRegion::setSize(const Size & size)
 {
   size_ = size;
 }
@@ -51,6 +60,4 @@ void BufferRegion::setQuadrant(BufferRegion::Quadrant type)
   quadrant_ = type;
 }
 
-} /* namespace grid_map */
-
-
+}  // namespace grid_map

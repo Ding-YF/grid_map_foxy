@@ -6,23 +6,29 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
+#ifndef GRID_MAP_FILTERS__SLIDINGWINDOWMATHEXPRESSIONFILTER_HPP_
+#define GRID_MAP_FILTERS__SLIDINGWINDOWMATHEXPRESSIONFILTER_HPP_
 
 #include <Eigen/Core>
-#include <string>
 
-#include <filters/filter_base.hpp>
 #include <grid_map_core/grid_map_core.hpp>
 
-#include "EigenLab/EigenLab.h"
+#include <filters/filter_base.hpp>
 
-namespace grid_map {
+#include <string>
+
+#include "EigenLab/EigenLab.hpp"
+
+namespace grid_map
+{
 
 /*!
  * Parse and evaluate a mathematical matrix expression within a sliding window on a layer of a grid map.
  */
-class SlidingWindowMathExpressionFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class SlidingWindowMathExpressionFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -31,7 +37,7 @@ class SlidingWindowMathExpressionFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~SlidingWindowMathExpressionFilter() override;
+  virtual ~SlidingWindowMathExpressionFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
@@ -43,9 +49,9 @@ class SlidingWindowMathExpressionFilter : public filters::FilterBase<GridMap> {
    * @param mapIn gridMap with the different layers to take the min.
    * @param mapOut gridMap with an additional layer containing the sum.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! Input layer name.
   std::string inputLayer_;
 
@@ -75,3 +81,4 @@ class SlidingWindowMathExpressionFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__SLIDINGWINDOWMATHEXPRESSIONFILTER_HPP_

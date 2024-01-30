@@ -6,21 +6,24 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
-
-#include <string>
-#include <vector>
+#ifndef GRID_MAP_FILTERS__DELETIONFILTER_HPP_
+#define GRID_MAP_FILTERS__DELETIONFILTER_HPP_
 
 #include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
 
-namespace grid_map {
+#include <vector>
+#include <string>
+
+namespace grid_map
+{
 
 /*!
  * Deletion filter class deletes layers of a grid map.
  */
-class DeletionFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class DeletionFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -29,7 +32,7 @@ class DeletionFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~DeletionFilter() override;
+  virtual ~DeletionFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
@@ -41,11 +44,12 @@ class DeletionFilter : public filters::FilterBase<GridMap> {
    * @param mapIn gridMap with the different layers.
    * @param mapOut gridMap without the deleted layers.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! List of layers that should be deleted.
   std::vector<std::string> layers_;
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__DELETIONFILTER_HPP_

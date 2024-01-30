@@ -6,21 +6,25 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
-
-#include <Eigen/Core>
-#include <string>
+#ifndef GRID_MAP_FILTERS__NORMALVECTORSFILTER_HPP_
+#define GRID_MAP_FILTERS__NORMALVECTORSFILTER_HPP_
 
 #include <filters/filter_base.hpp>
 #include <grid_map_core/grid_map_core.hpp>
 
-namespace grid_map {
+#include <Eigen/Core>
+#include <string>
+
+namespace grid_map
+{
 
 /*!
  * Compute the normal vectors of a layer in a map.
  */
-class NormalVectorsFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class NormalVectorsFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -55,9 +59,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param mapIn grid map containing the layer for which the normal vectors are computed for.
    * @param mapOut grid map containing mapIn and the new layers for the normal vectors.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   /*!
    * Estimate the normal vector at each point of the input layer by using the areaSingleNormalComputation function.
    * This function makes use of the area method and is the serial version of such normal vector computation using a
@@ -67,7 +71,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param inputLayer: Layer the normal vector should be computed for.
    * @param outputLayersPrefix: Output layer name prefix.
    */
-  void computeWithAreaSerial(GridMap& map, const std::string& inputLayer, const std::string& outputLayersPrefix);
+  void computeWithAreaSerial(
+    GridMap & map, const std::string & inputLayer,
+    const std::string & outputLayersPrefix);
 
   /*!
    * Estimate the normal vector at each point of the input layer by using the areaSingleNormalComputation function.
@@ -78,7 +84,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param inputLayer: Layer the normal vector should be computed for.
    * @param outputLayersPrefix: Output layer name prefix.
    */
-  void computeWithAreaParallel(GridMap& map, const std::string& inputLayer, const std::string& outputLayersPrefix);
+  void computeWithAreaParallel(
+    GridMap & map, const std::string & inputLayer,
+    const std::string & outputLayersPrefix);
 
   /*!
    * Estimate the normal vector at one point of the input layer, specified by the index parameter, by using points within
@@ -104,8 +112,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param outputLayersPrefix: Output layer name prefix.
    * @param index: Index of point in the grid map for which this function calculates the normal vector.
    */
-  void areaSingleNormalComputation(GridMap& map, const std::string& inputLayer, const std::string& outputLayersPrefix,
-                                   const grid_map::Index& index);
+  void areaSingleNormalComputation(
+    GridMap & map, const std::string & inputLayer, const std::string & outputLayersPrefix,
+    const grid_map::Index & index);
   /*!
    * Estimate the normal vector at each point of the input layer by using the rasterSingleNormalComputation function.
    * This function makes use of the raster method and is the serial version of such normal vector computation using a
@@ -115,7 +124,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param inputLayer: Layer the normal vector should be computed for.
    * @param outputLayersPrefix: Output layer name prefix.
    */
-  void computeWithRasterSerial(GridMap& map, const std::string& inputLayer, const std::string& outputLayersPrefix);
+  void computeWithRasterSerial(
+    GridMap & map, const std::string & inputLayer,
+    const std::string & outputLayersPrefix);
 
   /*!
    * Estimate the normal vector at each point of the input layer by using the rasterSingleNormalComputation function.
@@ -126,7 +137,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param inputLayer: Layer the normal vector should be computed for.
    * @param outputLayersPrefix: Output layer name prefix.
    */
-  void computeWithRasterParallel(GridMap& map, const std::string& inputLayer, const std::string& outputLayersPrefix);
+  void computeWithRasterParallel(
+    GridMap & map, const std::string & inputLayer,
+    const std::string & outputLayersPrefix);
 
   /*!
    * Estimate the normal vector at one point of the input layer, specified by the index parameter, by using neighboring points
@@ -158,8 +171,9 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
    * @param dataMap: Matrix containing the input layer of the grid map in question.
    * @param index: Index of point in the grid map for which this function calculates the normal vector.
    */
-  void rasterSingleNormalComputation(GridMap& map, const std::string& outputLayersPrefix, const grid_map::Matrix& dataMap,
-                                     const grid_map::Index& index);
+  void rasterSingleNormalComputation(
+    GridMap & map, const std::string & outputLayersPrefix, const grid_map::Matrix & dataMap,
+    const grid_map::Index & index);
 
   enum class Method { AreaSerial, AreaParallel, RasterSerial, RasterParallel };
 
@@ -188,3 +202,4 @@ class NormalVectorsFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__NORMALVECTORSFILTER_HPP_

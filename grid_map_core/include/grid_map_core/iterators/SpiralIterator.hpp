@@ -6,15 +6,18 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
 
-#include "grid_map_core/GridMap.hpp"
+#ifndef GRID_MAP_CORE__ITERATORS__SPIRALITERATOR_HPP_
+#define GRID_MAP_CORE__ITERATORS__SPIRALITERATOR_HPP_
 
 #include <Eigen/Core>
 #include <memory>
 #include <vector>
 
-namespace grid_map {
+#include "grid_map_core/GridMap.hpp"
+
+namespace grid_map
+{
 
 /*!
  * Iterator class to iterate through a circular area of the map with a spiral.
@@ -22,32 +25,40 @@ namespace grid_map {
 class SpiralIterator
 {
 public:
-
   /*!
    * Constructor.
    * @param gridMap the grid map to iterate on.
    * @param center the position of the circle center.
    * @param radius the radius of the circle.
    */
-  SpiralIterator(const grid_map::GridMap& gridMap, Eigen::Vector2d  center, double radius);
+  SpiralIterator(
+    const grid_map::GridMap & gridMap, const Eigen::Vector2d & center,
+    const double radius);
+
+  /*!
+   * Assignment operator.
+   * @param iterator the iterator to copy data from.
+   * @return a reference to *this.
+   */
+  SpiralIterator & operator=(const SpiralIterator & other);
 
   /*!
    * Compare to another iterator.
    * @return whether the current iterator points to a different address than the other one.
    */
-  bool operator !=(const SpiralIterator& other) const;
+  bool operator!=(const SpiralIterator & other) const;
 
   /*!
    * Dereference the iterator with const.
    * @return the value to which the iterator is pointing.
    */
-  const Eigen::Array2i& operator *() const;
+  const Eigen::Array2i & operator*() const;
 
   /*!
    * Increase the iterator to the next element.
    * @return a reference to the updated iterator.
    */
-  SpiralIterator& operator ++();
+  SpiralIterator & operator++();
 
   /*!
    * Indicates if iterator is past end.
@@ -62,12 +73,11 @@ public:
   double getCurrentRadius() const;
 
 private:
-
   /*!
    * Check if index is inside the circle.
    * @return true if inside, false otherwise.
    */
-  bool isInside(const Index& index) const;
+  bool isInside(const Index index) const;
 
   /*!
    * Uses the current distance to get the points of a ring
@@ -75,8 +85,9 @@ private:
    */
   void generateRing();
 
-  static int signum(const int val) {
-      return static_cast<int>(0 < val) - static_cast<int>(val < 0);
+  int signum(const int val)
+  {
+    return (0 < val) - (val < 0);
   }
 
   //! Position of the circle center;
@@ -101,9 +112,9 @@ private:
   double resolution_;
   Size bufferSize_;
 
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }  // namespace grid_map
-
+#endif  // GRID_MAP_CORE__ITERATORS__SPIRALITERATOR_HPP_

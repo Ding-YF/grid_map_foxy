@@ -6,20 +6,23 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
+#ifndef GRID_MAP_FILTERS__DUPLICATIONFILTER_HPP_
+#define GRID_MAP_FILTERS__DUPLICATIONFILTER_HPP_
+
+#include <filters/filter_base.hpp>
 
 #include <string>
 
-#include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
-
-namespace grid_map {
+namespace grid_map
+{
 
 /*!
  * Duplication filter class duplicates a layer of a grid map.
  */
-class DuplicationFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class DuplicationFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -28,7 +31,7 @@ class DuplicationFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~DuplicationFilter() override;
+  virtual ~DuplicationFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
@@ -40,9 +43,9 @@ class DuplicationFilter : public filters::FilterBase<GridMap> {
    * @param mapIn with the layer to duplicate.
    * @param mapOut with the layer duplicated.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! Name of the layer that is duplicated.
   std::string inputLayer_;
 
@@ -51,3 +54,4 @@ class DuplicationFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__DUPLICATIONFILTER_HPP_

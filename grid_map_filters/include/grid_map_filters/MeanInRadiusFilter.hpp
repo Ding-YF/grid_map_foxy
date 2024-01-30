@@ -6,20 +6,24 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
-
-#include <string>
+#ifndef GRID_MAP_FILTERS__MEANINRADIUSFILTER_HPP_
+#define GRID_MAP_FILTERS__MEANINRADIUSFILTER_HPP_
 
 #include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
 
-namespace grid_map {
+#include <vector>
+#include <string>
+
+namespace grid_map
+{
 
 /*!
  * Filter class to find the mean of the values inside a radius.
  */
-class MeanInRadiusFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class MeanInRadiusFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -28,7 +32,7 @@ class MeanInRadiusFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~MeanInRadiusFilter() override;
+  virtual ~MeanInRadiusFilter();
 
   /*!
    * Configures the filter from parameters on the Parameter Server
@@ -41,9 +45,9 @@ class MeanInRadiusFilter : public filters::FilterBase<GridMap> {
    * @param mapIn grid map containing the input layer.
    * @param mapOut grid map containing the layers of the input map and the new layer.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! Radius to take the mean from.
   double radius_;
 
@@ -55,3 +59,4 @@ class MeanInRadiusFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__MEANINRADIUSFILTER_HPP_

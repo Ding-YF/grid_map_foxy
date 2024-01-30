@@ -6,34 +6,56 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#include "grid_map_filters/SetBasicLayersFilter.hpp"
+#include "../include/grid_map_filters/SetBasicLayersFilter.hpp"
 
 #include <grid_map_core/GridMap.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-using namespace filters;
+#include <string>
+#include <vector>
 
-namespace grid_map {
+#include "grid_map_cv/utilities.hpp"
 
-SetBasicLayersFilter::SetBasicLayersFilter() = default;
+namespace grid_map
+{
 
-SetBasicLayersFilter::~SetBasicLayersFilter() = default;
+template<typename T>
+SetBasicLayersFilter<T>::SetBasicLayersFilter()
+{
+}
 
-bool SetBasicLayersFilter::configure() {
-  if (!FilterBase::getParam(std::string("layers"), layers_)) {
-    ROS_ERROR("SetBasicLayersFilters did not find parameter 'layers'.");
+template<typename T>
+SetBasicLayersFilter<T>::~SetBasicLayersFilter()
+{
+}
+
+template<typename T>
+bool SetBasicLayersFilter<T>::configure()
+{
+  ParameterReader param_reader(this->param_prefix_, this->params_interface_);
+
+  if (!param_reader.get(std::string("layer"), layers_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "SetBasicLayersFilters did not find parameter 'layers'.");
     return false;
   }
 
   return true;
 }
 
-bool SetBasicLayersFilter::update(const GridMap& mapIn, GridMap& mapOut) {
+template<typename T>
+bool SetBasicLayersFilter<T>::update(const T & mapIn, T & mapOut)
+{
   mapOut = mapIn;
   std::vector<std::string> layersChecked;
 
-  for (const auto& layer : layers_) {
+  for (const auto & layer : layers_) {
     if (!mapOut.exists(layer)) {
-      ROS_WARN("Layer `%s` does not exist and is not set as basic layer.", layer.c_str());
+      RCLCPP_WARN(
+        this->logging_interface_->get_logger(),
+        "Layer `%s` does not exist and is not set as basic layer.",
+        layer.c_str());
       continue;
     }
     layersChecked.push_back(layer);
@@ -44,3 +66,7 @@ bool SetBasicLayersFilter::update(const GridMap& mapIn, GridMap& mapOut) {
 }
 
 }  // namespace grid_map
+
+PLUGINLIB_EXPORT_CLASS(
+  grid_map::SetBasicLayersFilter<grid_map::GridMap>,
+  filters::FilterBase<grid_map::GridMap>)

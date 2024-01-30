@@ -6,20 +6,25 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
+#include <math.h>
+#include <Eigen/Geometry>
+#include <memory>
+
 #include "grid_map_core/iterators/EllipseIterator.hpp"
 #include "grid_map_core/GridMapMath.hpp"
 
-#include <cmath>
-#include <Eigen/Geometry>
 
-namespace grid_map {
+namespace grid_map
+{
 
-EllipseIterator::EllipseIterator(const GridMap& gridMap, const Position& center, const Length& length, const double rotation)
-    : center_(center)
+EllipseIterator::EllipseIterator(
+  const GridMap & gridMap, const Position & center,
+  const Length & length, const double rotation)
+: center_(center)
 {
   semiAxisSquare_ = (0.5 * length).square();
-  double sinRotation = std::sin(rotation);
-  double cosRotation = std::cos(rotation);
+  double sinRotation = sin(rotation);
+  double cosRotation = cos(rotation);
   transformMatrix_ << cosRotation, sinRotation, sinRotation, -cosRotation;
   mapLength_ = gridMap.getLength();
   mapPosition_ = gridMap.getPosition();
@@ -29,33 +34,45 @@ EllipseIterator::EllipseIterator(const GridMap& gridMap, const Position& center,
   Index submapStartIndex;
   Index submapBufferSize;
   findSubmapParameters(center, length, rotation, submapStartIndex, submapBufferSize);
-  internalIterator_ = std::make_shared<SubmapIterator>(gridMap, submapStartIndex, submapBufferSize);
-  if (!isInside()) {
-    ++(*this);
-  }
+  internalIterator_ =
+    std::shared_ptr<SubmapIterator>(
+    new SubmapIterator(
+      gridMap, submapStartIndex,
+      submapBufferSize));
+  if (!isInside()) {++(*this);}
 }
 
-bool EllipseIterator::operator !=(const EllipseIterator& other) const
+EllipseIterator & EllipseIterator::operator=(const EllipseIterator & other)
 {
-  return (internalIterator_ != other.internalIterator_);
+  center_ = other.center_;
+  semiAxisSquare_ = other.semiAxisSquare_;
+  transformMatrix_ = other.transformMatrix_;
+  internalIterator_ = other.internalIterator_;
+  mapLength_ = other.mapLength_;
+  mapPosition_ = other.mapPosition_;
+  resolution_ = other.resolution_;
+  bufferSize_ = other.bufferSize_;
+  bufferStartIndex_ = other.bufferStartIndex_;
+  return *this;
 }
 
-const Eigen::Array2i& EllipseIterator::operator *() const
+bool EllipseIterator::operator!=(const EllipseIterator & other) const
+{
+  return internalIterator_ != other.internalIterator_;
+}
+
+const Eigen::Array2i & EllipseIterator::operator*() const
 {
   return *(*internalIterator_);
 }
 
-EllipseIterator& EllipseIterator::operator ++()
+EllipseIterator & EllipseIterator::operator++()
 {
   ++(*internalIterator_);
-  if (internalIterator_->isPastEnd()) {
-    return *this;
-  }
+  if (internalIterator_->isPastEnd()) {return *this;}
 
   for ( ; !internalIterator_->isPastEnd(); ++(*internalIterator_)) {
-    if (isInside()) {
-      break;
-    }
+    if (isInside()) {break;}
   }
 
   return *this;
@@ -66,7 +83,7 @@ bool EllipseIterator::isPastEnd() const
   return internalIterator_->isPastEnd();
 }
 
-const Size& EllipseIterator::getSubmapSize() const
+const Size & EllipseIterator::getSubmapSize() const
 {
   return internalIterator_->getSubmapSize();
 }
@@ -74,13 +91,17 @@ const Size& EllipseIterator::getSubmapSize() const
 bool EllipseIterator::isInside() const
 {
   Position position;
-  getPositionFromIndex(position, *(*internalIterator_), mapLength_, mapPosition_, resolution_, bufferSize_, bufferStartIndex_);
-  double value = ((transformMatrix_ * (position - center_)).array().square() / semiAxisSquare_).sum();
-  return (value <= 1);
+  getPositionFromIndex(
+    position, *(*internalIterator_), mapLength_, mapPosition_, resolution_,
+    bufferSize_, bufferStartIndex_);
+  double value =
+    ((transformMatrix_ * (position - center_)).array().square() / semiAxisSquare_).sum();
+  return value <= 1;
 }
 
-void EllipseIterator::findSubmapParameters(const Position& center, const Length& length, const double rotation,
-                                           Index& startIndex, Size& bufferSize) const
+void EllipseIterator::findSubmapParameters(
+  const Position & center, const Length & length, const double rotation,
+  Index & startIndex, Size & bufferSize) const
 {
   const Eigen::Rotation2Dd rotationMatrix(rotation);
   Eigen::Vector2d u = rotationMatrix * Eigen::Vector2d(length(0), 0.0);
@@ -90,11 +111,14 @@ void EllipseIterator::findSubmapParameters(const Position& center, const Length&
   Position bottomRight = center.array() - boundingBoxHalfLength;
   boundPositionToRange(topLeft, mapLength_, mapPosition_);
   boundPositionToRange(bottomRight, mapLength_, mapPosition_);
-  getIndexFromPosition(startIndex, topLeft, mapLength_, mapPosition_, resolution_, bufferSize_, bufferStartIndex_);
+  getIndexFromPosition(
+    startIndex, topLeft, mapLength_, mapPosition_, resolution_, bufferSize_,
+    bufferStartIndex_);
   Index endIndex;
-  getIndexFromPosition(endIndex, bottomRight, mapLength_, mapPosition_, resolution_, bufferSize_, bufferStartIndex_);
-  bufferSize = getSubmapSizeFromCornerIndices(startIndex, endIndex, bufferSize_, bufferStartIndex_);
+  getIndexFromPosition(
+    endIndex, bottomRight, mapLength_, mapPosition_, resolution_, bufferSize_,
+    bufferStartIndex_);
+  bufferSize = getSubmapSizeFromCornerIndeces(startIndex, endIndex, bufferSize_, bufferStartIndex_);
 }
 
-} /* namespace grid_map */
-
+}  // namespace grid_map

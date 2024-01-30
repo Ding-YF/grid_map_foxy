@@ -6,20 +6,24 @@
  *      Institute: ETH Zurich, Robotic Systems Lab
  */
 
-#pragma once
+#ifndef POINTCLOUDCREATOR_HPP_
+#define POINTCLOUDCREATOR_HPP_
 
 #include "test_helpers.hpp"
 
-namespace grid_map {
-namespace grid_map_pcl_test {
+namespace grid_map
+{
+namespace grid_map_pcl_test
+{
 
 /*
  * Creates point clouds with some noise in the z direction (which is
  * the direction perpendicular to the surface normal). This is an approximation
  * of a point cloud that would be obtained with a real sensor.
  */
-class PointcloudCreator {
- public:
+class PointcloudCreator
+{
+public:
   /*!
    * Creates a noisy point cloud of a step (i.e. two planes with some
    * displacement in z direction in between). Visualize stepTerrain.pcd inside
@@ -31,7 +35,9 @@ class PointcloudCreator {
    * @param[out] std deviation in z direction of the points that form a plane
    * @return point cloud of the step terrain
    */
-  static Pointcloud::Ptr createNoisyPointcloudOfStepTerrain(double* stepLocation, double* zHigh, double* zLow, double* stdDev);
+  static Pointcloud::Ptr createNoisyPointcloudOfStepTerrain(
+    double * stepLocation, double * zHigh,
+    double * zLow, double * stdDev);
 
   /*!
    * Creates a blob of points (x,y,z). All coordinates (x,y,z)
@@ -41,7 +47,7 @@ class PointcloudCreator {
    * @param[out] standard deviation for points
    * @return point cloud that represents that blob of points
    */
-  static Pointcloud::Ptr createBlobOfPoints(double* mean, double* stdDev);
+  static Pointcloud::Ptr createBlobOfPoints(double * mean, double * stdDev);
 
   /*!
    * Creates a set of 4 points that form a square, with
@@ -53,7 +59,7 @@ class PointcloudCreator {
    * @param[out] varialbe y
    * @return point cloud with 4 points that form a square
    */
-  static Pointcloud::Ptr createVerticesOfASquare(double* x, double* y);
+  static Pointcloud::Ptr createVerticesOfASquare(double * x, double * y);
 
   /*!
    * Creates a plane where z coordinate of the points is normally distributed
@@ -65,7 +71,7 @@ class PointcloudCreator {
    * @param[out] standard deviation in z coordinate
    * @return point cloud that represents a noisy plane
    */
-  static Pointcloud::Ptr createNoisyPlane(double* height, double* stdDevZ);
+  static Pointcloud::Ptr createNoisyPlane(double * height, double * stdDevZ);
 
   /*!
    * Creates two planes (top and bottom) where z coordinate of the
@@ -77,7 +83,7 @@ class PointcloudCreator {
    * @param[out] standard deviation in z coordinate
    * @return point cloud that represents a two planes above each other
    */
-  static Pointcloud::Ptr createNoisyDoublePlane(double* minZ, double* stdDevZ);
+  static Pointcloud::Ptr createNoisyDoublePlane(double * minZ, double * stdDevZ);
 
   /*!
    * Creates a plane with no noisy in z direction at a height that is
@@ -87,7 +93,7 @@ class PointcloudCreator {
    * @param[out] height (z coordinate) of the plane
    * @return point cloud of a perfect plane
    */
-  static Pointcloud::Ptr createPerfectPlane(double* height);
+  static Pointcloud::Ptr createPerfectPlane(double * height);
 
   /*!
    * Creates N blobs of points where N is uniformly distributed.
@@ -100,8 +106,9 @@ class PointcloudCreator {
    * @param[out] number of blobs
    * @return point cloud with n blobs
    */
-  static Pointcloud::Ptr createNBlobsAboveEachOther(double* minZ, double* stdDevZ, int* nBlobs);
+  static Pointcloud::Ptr createNBlobsAboveEachOther(double * minZ, double * stdDevZ, int * nBlobs);
 };
 
-} /* namespace grid_map_pcl_test*/
-} /* namespace grid_map*/
+}  // namespace grid_map_pcl_test
+}  // namespace grid_map
+#endif  // POINTCLOUDCREATOR_HPP_

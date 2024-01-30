@@ -6,39 +6,43 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
+#ifndef GRID_MAP_PCL__GRIDMAPPCLCONVERTER_HPP_
+#define GRID_MAP_PCL__GRIDMAPPCLCONVERTER_HPP_
 
 #include <grid_map_core/grid_map_core.hpp>
 
 // PCL
-#include <pcl/PolygonMesh.h>
-#include <pcl/common/common.h>
-#include <pcl/conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/conversions.h>
+#include <pcl/PolygonMesh.h>
+#include <pcl/common/common.h>
 
 // STD
+#include <iostream>
+#include <string>
+#include <vector>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
-#include <vector>
 
-namespace grid_map {
+namespace grid_map
+{
 
 /*!
  * Conversions between grid maps and PCL types.
  */
-class GridMapPclConverter {
- public:
+class GridMapPclConverter
+{
+public:
   /*!
    * Default constructor.
    */
-  GridMapPclConverter() = default;
+  GridMapPclConverter();
 
   /*!
    * Destructor.
    */
-  virtual ~GridMapPclConverter() = default;
+  virtual ~GridMapPclConverter();
 
   /*!
    * Initializes the geometry of a grid map from a polygon mesh. This changes
@@ -48,7 +52,9 @@ class GridMapPclConverter {
    * @param[out] gridMap the grid map to be initialized.
    * @return true if successful, false otherwise.
    */
-  static bool initializeFromPolygonMesh(const pcl::PolygonMesh& mesh, const double resolution, grid_map::GridMap& gridMap);
+  static bool initializeFromPolygonMesh(
+    const pcl::PolygonMesh & mesh, const double resolution,
+    grid_map::GridMap & gridMap);
 
   /*!
    * Adds a layer with data from a polygon mesh. The mesh is ray traced from
@@ -58,11 +64,17 @@ class GridMapPclConverter {
    * @param[out] gridMap the grid map to be populated.
    * @return true if successful, false otherwise.
    */
-  static bool addLayerFromPolygonMesh(const pcl::PolygonMesh& mesh, const std::string& layer, grid_map::GridMap& gridMap);
+  static bool addLayerFromPolygonMesh(
+    const pcl::PolygonMesh & mesh, const std::string & layer,
+    grid_map::GridMap & gridMap);
 
- private:
-  static bool rayTriangleIntersect(const Eigen::Vector3f& point, const Eigen::Vector3f& ray, const Eigen::Matrix3f& triangleVertices,
-                                   Eigen::Vector3f& intersectionPoint);
+private:
+  static bool rayTriangleIntersect(
+    const Eigen::Vector3f & point,
+    const Eigen::Vector3f & ray,
+    const Eigen::Matrix3f & triangleVertices,
+    Eigen::Vector3f & intersectionPoint);
 };
 
-} /* namespace grid_map */
+}   // namespace grid_map
+#endif  // GRID_MAP_PCL__GRIDMAPPCLCONVERTER_HPP_

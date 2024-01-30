@@ -1,61 +1,56 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5)
 project(grid_map_filters)
 
-# Better with serial algorithms.
-set(CMAKE_CXX_STANDARD 17)
-# We want performance (fast-math) but also need a representation for NaN values to represent missing values. 
-# Therefore, we disable the finite-math-only flag that was set by fast-math.  
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-finite-math-only")
-add_compile_options(-Wall -Wextra -Wpedantic)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+## Find ament_cmake macros and libraries
+find_package(ament_cmake REQUIRED)
+find_package(filters REQUIRED)
+find_package(grid_map_cmake_helpers REQUIRED)
+find_package(grid_map_core REQUIRED)
+find_package(grid_map_msgs REQUIRED)
+find_package(grid_map_ros REQUIRED)
+find_package(pluginlib REQUIRED)
 
-# Other possible options.
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -ffast-math")
-#set(TARGET_ARCHITECTURE "kaby-lake")
+## System dependencies are found with CMake's conventions
+find_package(PkgConfig REQUIRED)
 
-## Create a list of catkin package dependencies used in header files of this package.
-set(CATKIN_PACKAGE_HEADER_DEPENDENCIES
-  grid_map_core
-  grid_map_ros
-  grid_map_msgs
+pkg_check_modules(TBB "tbb")
+if(TBB_FOUND)
+add_definitions(
+  ${TBB_CFLAGS}
+  ${TBB_CFLAGS_OTHER}
+)
+else()
+message([FATAL_ERROR] "tbb module not found")
+endif()
+
+grid_map_package()
+
+set(dependencies
+  TBB
   filters
+  grid_map_core
+  grid_map_msgs
+  grid_map_ros
+  pluginlib
 )
 
-## Create a list of catkin package dependencies, now for both header and source files.
-set(CATKIN_PACKAGE_DEPENDENCIES
-  ${CATKIN_PACKAGE_HEADER_DEPENDENCIES}
-)
-
-## Find catkin dependencies for building this package.
-find_package(catkin REQUIRED
-  COMPONENTS
-  ${CATKIN_PACKAGE_DEPENDENCIES}
-)
-
-find_package(TBB 2020.1 EXACT REQUIRED)
-
-find_package(OpenCV REQUIRED)
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS
-    include
-    ${OpenCV_INCLUDE_DIRS} # TODO Remove this include directory, currently it exported by the medianFillFilter header.
-  LIBRARIES
-    ${PROJECT_NAME}
-    ${PROJECT_NAME}_plugins
-  CATKIN_DEPENDS
-    ${CATKIN_PACKAGE_HEADER_DEPENDENCIES}
-  DEPENDS
-    OpenCV
+set(filter_libs
+  threshold_filter
+  min_in_radius_filter
+  mean_in_radius_filter
+  normal_vectors_filter
+  curvature_filter
+  normal_color_map_filter
+  light_intensity_filter
+  math_expression_filter
+  sliding_window_math_expression_filter
+  duplication_filter
+  deletion_filter
+  color_fill_filter
+  color_map_filter
+  color_blending_filter
+  set_basic_layers_filter
+  buffer_normalizer_filter
 )
 
 ###########
@@ -66,72 +61,35 @@ catkin_package(
 include_directories(
   include
   SYSTEM
-    ${catkin_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS}
-)
-
-## Declare a cpp library
-add_library(${PROJECT_NAME}
-  src/ThresholdFilter.cpp
-  src/MinInRadiusFilter.cpp
-  src/MeanInRadiusFilter.cpp
-  src/MedianFillFilter.cpp
-  src/MockFilter.cpp
-  src/NormalVectorsFilter.cpp
-  src/CurvatureFilter.cpp
-  src/NormalColorMapFilter.cpp
-  src/LightIntensityFilter.cpp
-  src/MathExpressionFilter.cpp
-  src/SlidingWindowMathExpressionFilter.cpp
-  src/DuplicationFilter.cpp
-  src/DeletionFilter.cpp
-  src/ColorFillFilter.cpp
-  src/ColorMapFilter.cpp
-  src/ColorBlendingFilter.cpp
-  src/SetBasicLayersFilter.cpp
-  src/BufferNormalizerFilter.cpp
-)
-
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
     ${TBB_INCLUDE_DIRS}
 )
 
-target_include_directories(${PROJECT_NAME}
-  SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-)
+## Declare cpp libraries
+add_library(threshold_filter SHARED src/ThresholdFilter.cpp)
+add_library(min_in_radius_filter SHARED src/MinInRadiusFilter.cpp)
+add_library(mean_in_radius_filter SHARED src/MeanInRadiusFilter.cpp)
+add_library(normal_vectors_filter SHARED src/NormalVectorsFilter.cpp)
+add_library(curvature_filter SHARED src/CurvatureFilter.cpp)
+add_library(normal_color_map_filter SHARED src/NormalColorMapFilter.cpp)
+add_library(light_intensity_filter SHARED src/LightIntensityFilter.cpp)
+add_library(math_expression_filter SHARED src/MathExpressionFilter.cpp)
+add_library(sliding_window_math_expression_filter SHARED src/SlidingWindowMathExpressionFilter.cpp)
+add_library(duplication_filter SHARED src/DuplicationFilter.cpp)
+add_library(deletion_filter SHARED src/DeletionFilter.cpp)
+add_library(color_fill_filter SHARED src/ColorFillFilter.cpp)
+add_library(color_map_filter SHARED src/ColorMapFilter.cpp)
+add_library(color_blending_filter SHARED src/ColorBlendingFilter.cpp)
+add_library(set_basic_layers_filter SHARED src/SetBasicLayersFilter.cpp)
+add_library(buffer_normalizer_filter SHARED src/BufferNormalizerFilter.cpp)
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${TBB_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+foreach(lib_name ${filter_libs})
+  ament_target_dependencies(${lib_name}
+    ${dependencies}
+  )
 
-add_dependencies(${PROJECT_NAME}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-# Instantiate plugin exports for every filter in this package.
-add_library(${PROJECT_NAME}_plugins
-  src/plugins.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_plugins
-  SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-)
-
-target_link_libraries(${PROJECT_NAME}_plugins
-  ${PROJECT_NAME}
-  ${TBB_LIBRARIES} # is this necessary?
-  ${OpenCV_LIBRARIES} # is this necessary?
-)
-
-add_dependencies(${PROJECT_NAME}_plugins
-  ${catkin_EXPORTED_TARGETS}
-  ${PROJECT_NAME}
-)
+  target_compile_options(${lib_name} PRIVATE "SHELL:--param ggc-min-expand=1")
+  target_compile_options(${lib_name} PRIVATE "SHELL:--param ggc-min-heapsize=32768")
+endforeach()
 
 #############
 ## Install ##
@@ -139,75 +97,60 @@ add_dependencies(${PROJECT_NAME}_plugins
 
 # Mark executables and/or libraries for installation
 install(
-  TARGETS
-    ${PROJECT_NAME}
-    ${PROJECT_NAME}_plugins
-  ARCHIVE DESTINATION
-    ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION
-    ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION
-    ${CATKIN_PACKAGE_BIN_DESTINATION}
+  TARGETS ${filter_libs}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
 # Mark cpp header files for installation
 install(
-  DIRECTORY
-    include/${PROJECT_NAME}/
-  DESTINATION
-    ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.hpp"
 )
 
 # Mark other files for installation
 install(
-  FILES
-    filter_plugins.xml
-  DESTINATION
-    ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  FILES filter_plugins.xml
+  DESTINATION share/${PROJECT_NAME}
 )
 
 #############
 ## Testing ##
 #############
 
-if (CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(${PROJECT_NAME}-test
-    test/test_grid_map_filters.cpp
-    test/median_fill_filter_test.cpp
-    test/mock_filter_test.cpp
-    test/threshold_filter_test.cpp
-  )
-  target_include_directories(${PROJECT_NAME}-test PRIVATE
-    include
-  )
-  target_include_directories(${PROJECT_NAME}-test SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-  )
-  target_link_libraries(${PROJECT_NAME}-test
-    gmock
-    gtest
-    ${PROJECT_NAME}
-  )
+if(BUILD_TESTING)
+  # Linting is setup this way to add a filter
+  # to ament_cpplint to ignore the lack of
+  # copyright messages at the top of files.
+  # Copyright messages are being checked for by both
+  # ament_cmake_cpplint & ament_cmake_copyright.
 
-  ###################
-  ## Code_coverage ##
-  ###################
-  find_package(cmake_code_coverage QUIET)
-  if(cmake_code_coverage_FOUND)
-    add_gtest_coverage(
-      TEST_BUILD_TARGETS
-        ${PROJECT_NAME}-test
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_lint_auto QUIET)
+  if(ament_lint_auto_FOUND)
+    # exclude copyright checks
+    list(APPEND AMENT_LINT_AUTO_EXCLUDE
+      ament_cmake_cpplint
+      ament_cmake_copyright
+    )
+    ament_lint_auto_find_test_dependencies()
+
+    # run cpplint without copyright filter
+    find_package(ament_cmake_cpplint)
+    ament_cpplint(
+      FILTERS -legal/copyright
     )
   endif()
+  ament_lint_auto_find_test_dependencies()
 endif()
 
-#################
-## Clang_tools ##
-#################
-find_package(cmake_clang_tools QUIET)
-if(cmake_clang_tools_FOUND)
-  add_default_clang_tooling(
-    DISABLE_CLANG_FORMAT
-  )
-endif(cmake_clang_tools_FOUND)
+ament_export_include_directories(
+  include
+  ${TBB_INCLUDE_DIRS}
+)
+ament_export_dependencies(${dependencies})
+ament_export_libraries(${filter_libs})
+pluginlib_export_plugin_description_file(filters filter_plugins.xml)
+ament_package()

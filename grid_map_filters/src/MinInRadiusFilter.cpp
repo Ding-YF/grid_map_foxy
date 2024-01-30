@@ -8,51 +8,79 @@
 
 #include "grid_map_filters/MinInRadiusFilter.hpp"
 
-#include <math.h>
 #include <grid_map_core/grid_map_core.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-using namespace filters;
+#include <string>
 
-namespace grid_map {
+#include "grid_map_cv/utilities.hpp"
 
-MinInRadiusFilter::MinInRadiusFilter() : radius_(0.0) {}
+namespace grid_map
+{
 
-MinInRadiusFilter::~MinInRadiusFilter() = default;
+template<typename T>
+MinInRadiusFilter<T>::MinInRadiusFilter()
+: radius_(0.0)
+{
+}
 
-bool MinInRadiusFilter::configure() {
-  if (!FilterBase::getParam(std::string("radius"), radius_)) {
-    ROS_ERROR("MinInRadius filter did not find parameter `radius`.");
+template<typename T>
+MinInRadiusFilter<T>::~MinInRadiusFilter()
+{
+}
+
+template<typename T>
+bool MinInRadiusFilter<T>::configure()
+{
+  ParameterReader param_reader(this->param_prefix_, this->params_interface_);
+
+  if (!param_reader.get(std::string("radius"), radius_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "MinInRadius filter did not find parameter `radius`.");
     return false;
   }
 
   if (radius_ < 0.0) {
-    ROS_ERROR("MinInRadius filter: Radius must be greater than zero.");
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "MinInRadius filter: Radius must be greater than zero.");
     return false;
   }
-  ROS_DEBUG("Radius = %f.", radius_);
+  RCLCPP_DEBUG(this->logging_interface_->get_logger(), "Radius = %f.", radius_);
 
-  if (!FilterBase::getParam(std::string("input_layer"), inputLayer_)) {
-    ROS_ERROR("MinInRadius filter did not find parameter `input_layer`.");
-    return false;
-  }
-
-  ROS_DEBUG("MinInRadius input layer is = %s.", inputLayer_.c_str());
-
-  if (!FilterBase::getParam(std::string("output_layer"), outputLayer_)) {
-    ROS_ERROR("Step filter did not find parameter `output_layer`.");
+  if (!param_reader.get(std::string("input_layer"), inputLayer_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "MinInRadius filter did not find parameter `input_layer`.");
     return false;
   }
 
-  ROS_DEBUG("MinInRadius output_layer = %s.", outputLayer_.c_str());
+  RCLCPP_DEBUG(
+    this->logging_interface_->get_logger(), "MinInRadius input layer is = %s.",
+    inputLayer_.c_str());
+
+  if (!param_reader.get(std::string("output_layer"), outputLayer_)) {
+    RCLCPP_ERROR(
+      this->logging_interface_->get_logger(),
+      "Step filter did not find parameter `output_layer`.");
+    return false;
+  }
+
+  RCLCPP_DEBUG(
+    this->logging_interface_->get_logger(), "MinInRadius output_layer = %s.",
+    outputLayer_.c_str());
   return true;
 }
 
-bool MinInRadiusFilter::update(const GridMap& mapIn, GridMap& mapOut) {
+template<typename T>
+bool MinInRadiusFilter<T>::update(const T & mapIn, T & mapOut)
+{
   // Add new layer to the elevation map.
   mapOut = mapIn;
   mapOut.add(outputLayer_);
 
-  double value{NAN};
+  double value;
 
   // First iteration through the elevation map.
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
@@ -68,7 +96,10 @@ bool MinInRadiusFilter::update(const GridMap& mapIn, GridMap& mapOut) {
 
     // Get minimal value in the circular window.
     bool init = false;
-    for (grid_map::CircleIterator submapIterator(mapOut, center, radius_); !submapIterator.isPastEnd(); ++submapIterator) {
+    for (grid_map::CircleIterator submapIterator(mapOut, center, radius_);
+      !submapIterator.isPastEnd();
+      ++submapIterator)
+    {
       if (!mapOut.isValid(*submapIterator, inputLayer_)) {
         continue;
       }
@@ -93,3 +124,7 @@ bool MinInRadiusFilter::update(const GridMap& mapIn, GridMap& mapOut) {
 }
 
 }  // namespace grid_map
+
+PLUGINLIB_EXPORT_CLASS(
+  grid_map::MinInRadiusFilter<grid_map::GridMap>,
+  filters::FilterBase<grid_map::GridMap>)

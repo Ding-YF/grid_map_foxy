@@ -6,21 +6,24 @@
  *   Institute: ETH Zurich, ANYbotics
  */
 
-#pragma once
+#ifndef GRID_MAP_FILTERS__LIGHTINTENSITYFILTER_HPP_
+#define GRID_MAP_FILTERS__LIGHTINTENSITYFILTER_HPP_
+
+#include <filters/filter_base.hpp>
 
 #include <Eigen/Core>
 #include <string>
 
-#include <filters/filter_base.hpp>
-#include <grid_map_core/GridMap.hpp>
-
-namespace grid_map {
+namespace grid_map
+{
 
 /*!
  * Compute the diffuse lighting of a surface as new black and white color layer.
  */
-class LightIntensityFilter : public filters::FilterBase<GridMap> {
- public:
+template<typename T>
+class LightIntensityFilter : public filters::FilterBase<T>
+{
+public:
   /*!
    * Constructor
    */
@@ -29,7 +32,7 @@ class LightIntensityFilter : public filters::FilterBase<GridMap> {
   /*!
    * Destructor.
    */
-  ~LightIntensityFilter() override;
+  virtual ~LightIntensityFilter();
 
   /*!
    * Configures the filter from parameters on the Parameter Server
@@ -41,9 +44,9 @@ class LightIntensityFilter : public filters::FilterBase<GridMap> {
    * @param mapIn grid map containing the layers of the normal vectors.
    * @param mapOut grid map containing mapIn and the black and white lighting color layer.
    */
-  bool update(const GridMap& mapIn, GridMap& mapOut) override;
+  bool update(const T & mapIn, T & mapOut) override;
 
- private:
+private:
   //! Input layers prefix.
   std::string inputLayersPrefix_;
 
@@ -55,3 +58,4 @@ class LightIntensityFilter : public filters::FilterBase<GridMap> {
 };
 
 }  // namespace grid_map
+#endif  // GRID_MAP_FILTERS__LIGHTINTENSITYFILTER_HPP_
